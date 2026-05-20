@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum PerformanceMark {
+  EXCEEDS
+  MEETS
+  NEEDS_IMPROVEMENT
+}
+
+enum ActivityType {
+  TASK_ASSIGNED
+  STATUS_UPDATED
+  TASK_COMPLETED
+  REVIEW_RECEIVED
+  RATING_UPDATED
+}
+
+model Team {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  users     User[]
+  projects  Project[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model User {
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  password        String
+  role            Role      @default(MEMBER)
+  teamId          String?
+  team            Team?     @relation(fields: [teamId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  projectsCreated Project[] @relation("ProjectCreator")
+  memberProjects  Project[] @relation("ProjectMembers")
+  tasksAssigned   Task[]    @relation("TaskAssignee")
+  tasksCreated    Task[]    @relation("TaskCreator")
+  reviewsGiven    Review[]  @relation("ReviewsGiven")
+  reviewsReceived Review[]  @relation("ReviewsReceived")
+  activityAsActor ActivityLog[] @relation("ActivityActor")
+  activityAsMember ActivityLog[] @relation("ActivityMember")
+  taskHistoryChanges TaskHistory[] @relation("TaskHistoryActor")
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  createdBy     String
+  createdByUser User     @relation("ProjectCreator", fields: [createdBy], references: [id])
+  members       User[]   @relation("ProjectMembers")
+  tasks         Task[]
+  activityLogs  ActivityLog[]
+  teamId        String?
+  team          Team?    @relation(fields: [teamId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Task {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  status          TaskStatus @default(TODO)
+  priority        String   @default("Medium")
+  dueDate         DateTime?
+  assignedAt      DateTime @default(now())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id])
+  assignedTo      String?
+  assignedToUser  User?    @relation("TaskAssignee", fields: [assignedTo], references: [id])
+  createdBy       String
+  createdByUser   User     @relation("TaskCreator", fields: [createdBy], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  histories       TaskHistory[]
+  activityLogs    ActivityLog[]
+}
+
+model Review {
+  id          String          @id @default(cuid())
+  rating      Int
+  feedback    String?
+  performance PerformanceMark
+  strengths   String[]        @default([])
+  improvements String[]       @default([])
+  reviewerId  String
+  reviewer    User            @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+  memberId    String
+  member      User            @relation("ReviewsReceived", fields: [memberId], references: [id], onDelete: Cascade)
+  activityLogs ActivityLog[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model ActivityLog {
+  id        String      @id @default(cuid())
+  type      ActivityType
+  message   String?
+  actorId   String?
+  actor     User?       @relation("ActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+  memberId  String
+  member    User        @relation("ActivityMember", fields: [memberId], references: [id], onDelete: Cascade)
+  taskId    String?
+  task      Task?       @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  projectId String?
+  project   Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  reviewId  String?
+  review    Review?     @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+  createdAt DateTime    @default(now())
+}
+
+model TaskHistory {
+  id          String     @id @default(cuid())
+  taskId      String
+  task        Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  status      TaskStatus
+  changedById String?
+  changedBy   User?      @relation("TaskHistoryActor", fields: [changedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime   @default(now())
+}
