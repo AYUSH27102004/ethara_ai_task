@@ -147,7 +147,7 @@ const seed = async () => {
 
   tasks.push(await prisma.task.create({
     data: {
-      title: 'Deploy Backend to Railway',
+      title: 'Deploy Backend to Vercel',
       description: 'Ship production-ready deployment with env validation.',
       status: 'TODO',
       priority: 'Low',
