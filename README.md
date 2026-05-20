@@ -333,6 +333,8 @@ task123#
 
 ## Deployment Notes
 
+For a full Railway walkthrough, see [`RAILWAY_DEPLOYMENT.md`](./RAILWAY_DEPLOYMENT.md).
+
 Backend deployment checklist:
 
 - Provision a PostgreSQL database
