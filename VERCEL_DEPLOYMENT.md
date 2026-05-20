@@ -47,6 +47,14 @@ NODE_ENV=production
 
 8. Deploy.
 
+Run production migrations separately from your local machine after setting `DATABASE_URL` to the same hosted database:
+
+```bash
+cd server
+npm run prisma:generate
+npx prisma migrate deploy
+```
+
 After deployment, open:
 
 ```text
@@ -127,6 +135,7 @@ Seeded users:
 - Confirm `DATABASE_URL` is present in backend environment variables.
 - Confirm your database accepts connections from Vercel.
 - Confirm the database URL includes SSL if your provider requires it.
+- If build fails with `P1001`, run migrations locally with `npx prisma migrate deploy` and keep Vercel's build command as `npm run vercel-build`.
 
 ### Login fails after deploy
 
