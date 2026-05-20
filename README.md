@@ -334,6 +334,7 @@ task123#
 ## Deployment Notes
 
 For a full Railway walkthrough, see [`RAILWAY_DEPLOYMENT.md`](./RAILWAY_DEPLOYMENT.md).
+For a Vercel deployment walkthrough, see [`VERCEL_DEPLOYMENT.md`](./VERCEL_DEPLOYMENT.md).
 
 Backend deployment checklist:
 
